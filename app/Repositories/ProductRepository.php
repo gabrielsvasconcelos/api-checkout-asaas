@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -36,5 +37,15 @@ class ProductRepository implements ProductRepositoryInterface
     public function getByUser(int $userId)
     {
         return Product::where('user_id', $userId)->with('user')->get();
+    }
+
+    public function getProductsByIds(array $productIds): Collection
+    {
+        return Product::whereIn('id', $productIds)->get();
+    }
+
+    public function getUserProducts(int $userId)
+    {
+        return Product::where('user_id', $userId)->get();
     }
 }
