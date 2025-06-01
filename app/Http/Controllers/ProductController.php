@@ -3,57 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
-use App\Models\Product;
+use App\Http\Resources\ProductResource;
+use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private ProductService $productService
+    ) {}
+
     public function index()
     {
-        $products = Product::all();
-        return response()->json($products);
+        $products = $this->productService->getAllProducts();
+        return ProductResource::collection($products);
     }
 
     public function store(ProductRequest $request): JsonResponse
     {
-        $productData = $request->validated();
-        $productData['user_id'] = Auth::id();
-        $product = Product::create($productData);
-
-        return response()->json($product, 201);
+        $product = $this->productService->createProduct($request->validated());
+        return response()->json(new ProductResource($product), 201);
     }
 
-    public function show(Product $product)
+    public function show(int $id)
     {
-        return response()->json($product);
+        $product = $this->productService->getProductById($id);
+        return new ProductResource($product);
     }
 
-    public function update(ProductRequest $request, Product $product): JsonResponse
+    public function update(ProductRequest $request, int $id): JsonResponse
     {
-        if (Auth::id() !== $product->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        $product->update($request->validated());
-        return response()->json($product);
+        $product = $this->productService->getProductById($id);
+        $updatedProduct = $this->productService->updateProduct($product, $request->validated());
+        return response()->json(new ProductResource($updatedProduct));
     }
 
-    public function destroy(Product $product): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        if (Auth::id() !== $product->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        $product->delete();
+        $product = $this->productService->getProductById($id);
+        $this->productService->deleteProduct($product);
         return response()->json(null, 204);
     }
 
     public function myProducts()
     {
-        $user = Auth::user();
-        $products = $user->products()->with('user')->get();
-        
-        return response()->json($products);
+        $products = $this->productService->getUserProducts(auth()->id());
+        return ProductResource::collection($products);
     }
 }
