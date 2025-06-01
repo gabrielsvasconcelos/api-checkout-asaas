@@ -2,82 +2,66 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\LoginUserRequest;
+use App\Http\Requests\RegisterUserRequest;
+use App\Http\Resources\UserResource;
+use App\Repositories\AuthRepository;
+use App\Traits\ApiResponser;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    use ApiResponser;
+
+    protected AuthRepository $authRepository;
+
+    public function __construct(AuthRepository $authRepository)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
+        $this->authRepository = $authRepository;
     }
 
-    public function login(Request $request)
+    public function register(RegisterUserRequest $request): JsonResponse
     {
-        try {
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
+        $user = $this->authRepository->createUser($request->validated());
+        
+        return $this->successResponse(
+            new UserResource($user),
+            'User registered successfully',
+            201
+        );
+    }
 
-            $user = User::where('email', $request->email)->first();
+    public function login(LoginUserRequest $request): JsonResponse
+    {
+        $user = $this->authRepository->findUserByEmail($request->email);
 
-            if (!$user) {
-                return response()->json([
-                    'message' => 'User not found'
-                ], 404);
-            }
-
-            if (!Hash::check($request->password, $user->password)) {
-                return response()->json([
-                    'message' => 'Invalid credentials'
-                ], 401);
-            }
-
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'message' => 'Login successful',
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Login failed',
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$user || !$this->authRepository->checkPassword($user, $request->password)) {
+            return $this->errorResponse('Invalid credentials', 401);
         }
+
+        $token = $this->authRepository->createToken($user);
+
+        return $this->successResponse([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => new UserResource($user)
+        ], 'Login successful');
     }
 
-    public function logout(Request $request)
+    public function logout(): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'message' => 'Logged out successfully'
-        ]);
+        $this->authRepository->deleteCurrentToken(auth()->user());
+        
+        return $this->successResponse(
+            null,
+            'Logged out successfully'
+        );
     }
 
-    public function user(Request $request)
+    public function user(): JsonResponse
     {
-        return response()->json($request->user());
+        return $this->successResponse(
+            new UserResource(auth()->user())
+        );
     }
 }
