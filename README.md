@@ -13,7 +13,7 @@ Este projeto é uma API desenvolvida com Laravel, com foco em cadastros de produ
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/seu-repo.git
+   git clone https://github.com/gabrielsvasconcelos/api-checkout-asaas.git
    ```
 
 2. Instale as dependências:
@@ -125,7 +125,7 @@ curl --location 'http://localhost:8000/api/orders' \
   },
   "items": [
     {
-      "product_id": 2,
+      "product_id": 1,
       "quantity": 1
     }
   ],
@@ -151,4 +151,6 @@ Este projeto está licenciado sob a licença MIT. Consulte o arquivo [LICENSE](L
 ## 🙋‍♂️ Suporte
 
 Para dúvidas ou sugestões, abra uma issue ou envie uma pull request.
+```
+gbrielsvasconcelos@gmail.com
 ```
