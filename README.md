@@ -1,17 +1,11 @@
-```markdown
-<p align="center">
-  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo">
-</p>
-
-<p align="center">
-  <a href="https://laravel.com" target="_blank">Projeto Laravel com Integração Asaas</a>
-</p>
+## Projeto Laravel com Integração Asaas
 
 ---
 
 ## 🚀 Visão Geral
 
 Este projeto é uma API desenvolvida com Laravel, com foco em cadastros de produtos, clientes e geração de cobranças via [Asaas](https://asaas.com). A autenticação é baseada em tokens (Laravel Sanctum), e todas as ações protegidas exigem autenticação via Bearer Token.
+
 
 ---
 
@@ -20,7 +14,6 @@ Este projeto é uma API desenvolvida com Laravel, com foco em cadastros de produ
 1. Clone o repositório:
    ```bash
    git clone https://github.com/seu-usuario/seu-repo.git
-   cd seu-repo
    ```
 
 2. Instale as dependências:
